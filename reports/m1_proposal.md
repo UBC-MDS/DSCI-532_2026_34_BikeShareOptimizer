@@ -56,11 +56,11 @@
 
 ## Section 4: Exploratory Data Analysis
 
-> *To address User Story 1 (Demographics), we analyzed the no-show rate across different age groups.*
+> *To address User Story 1 (demands per start station and hour), we analyzed the count of start station and hour group.*
 >
-> **Analysis:** The bar chart in `notebooks/eda_analysis.ipynb` reveals that patients in the 20-30 age bracket have a 15% higher no-show rate than the average.
+> **Analysis:** The trips_per_start_station_hour table in `notebooks/eda_analysis.ipynb` reveals that E 17 St & Broadway, Broadway & W 24 St and W 20 St & 11 Ave are the top 3 most bike in demand stations at 17 or 18'o clock.
 >
-> **Reflection:** This finding supports the need for a targeted filter in the dashboard. By allowing the policy maker to isolate "Young Adults," they can investigate if this high trend holds true across different clinic locations, helping them decide if age-specific text message reminders are needed.
+> **Reflection:** This finding supprts the need for a targeted filter in the dashboard. By allowing bike share suppliers to select start station and hour, they can know how many bikes need to ready at which station before certain hour so that there won't be bike shortage. 
 
 ## Section 5: App Sketch & Description
 
