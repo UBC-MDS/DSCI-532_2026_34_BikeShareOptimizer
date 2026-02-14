@@ -1,58 +1,68 @@
+# Project Proposal: Bike Share Operational Dashboard
+
 ## Section 1: Motivation and Purpose
 
-> **Our role:** Data scientist consultancy firm
-> **Target audience:** Health care administrators
->
-> Missed medical appointments cost the healthcare system a lot of money and affects the quality of care. If we could understand which factors lead to missed appointments it may be possible to reduce their frequency and use the saved resources to improve patient outcomes. To address this challenge, we propose building a data visualization app that allows health care administrators to visually explore a dataset of missed appointments to identify common factors. Our app will show the distribution of factors contributing to appointment show/no show and allow users to explore different aspects of this data by filtering and re-ordering on different variables in order to compare factors that contribute to absence.
+### Target Audience
+We design this dashboard for **Bike Share Operations Managers** and **City Transportation Planners** who are responsible for maintaining balanced bike availability across stations and ensuring smooth system operation.
+
+### Problem
+Bike share systems experience uneven demand throughout the day and across locations. During peak commute hours, certain stations quickly run empty while others become full and cannot accept returns. This creates user frustration and requires costly manual redistribution. Currently, managers rely on static reports or delayed summaries, making it difficult to anticipate demand patterns and proactively allocate resources.
+
+### Solution
+This dashboard provides an interactive decision-support tool that allows users to explore bike usage patterns across time and stations. Using filters such as **date**, **hour of day**, and **rider type**, users can:
+* Identify peak demand periods.
+* Detect stations at risk of becoming empty or full.
+* Compare weekday and weekend usage patterns.
+* Monitor long-term trends.
+
+This enables proactive redistribution and operational planning rather than reactive intervention.
+
+---
 
 ## Section 2: Description of the Data
 
-> We will be visualizing a dataset of approximately 300,000 missed patient appointments. Each appointment has 15 associated variables that describe the following characteristics, which we hypothesize could be helpful in determining why patient's miss their appointments:
->
-> - Patient demographics (`patient_id`, `gender`, `age`, etc)
-> - The health status of the patient (`general_health_status`, `existing_conditions` e.g. "Hypertension", "Physical disability")
-> - Information about the appointment itself (`appointment_id`, `appointment_date`)
->
-> Using this data we will also derive new variables, such as the time since the patient's last appointment (`days_since_last_appointment`) and which weekday the appointment was on (`appointment_weekday`), as it would be interesting to explore if these could be linked to the patient missing their appointment.
+### Dataset Source
+* **Dataset:** Citi Bike Trip History Dataset
+* **Source:** [https://citibikenyc.com/system-data](https://citibikenyc.com/system-data)
+
+### Data Structure
+* **Unit of observation:** A single bike trip
+* **Approximate size (after sampling):**
+    * Rows: ~50,000 – 200,000
+    * Columns: ~10–15
+
+### Key Variables
+
+| Variable | Description | Why relevant |
+| :--- | :--- | :--- |
+| `start_time` | Timestamp of trip start | Identifies peak demand hours |
+| `start_station` | Origin station | Detects high-demand stations |
+| `end_station` | Destination station | Identifies flow patterns |
+| `trip_duration` | Length of ride | Understands usage behavior |
+| `user_type` | Member vs casual | Distinguishes commuters vs tourists |
+
+### Relevance to the Problem
+Temporal variables allow analysis of demand fluctuations across hours and days, while station identifiers enable location-based operational decisions. Rider type helps distinguish commuter patterns from recreational usage. Together, these variables support actionable decisions such as prioritizing redistribution routes and scheduling staffing during peak demand periods.
+
+---
 
 ## Section 3: Research Questions & Usage Scenarios
 
+### Persona
+* **Name:** Alex
+* **Role:** Bike Share Operations Manager
+* **Goal:** Ensure stations remain balanced and minimize service disruptions.
+* **Context:** Alex reviews system usage daily and must decide where redistribution trucks should be sent before rush hour begins.
+
 ### Usage Scenario
-> Mary is a policy maker with the Canadian Ministry of Health and she wants to understand what factors lead to missed appointments in order to devise an intervention that improves attendance numbers. She wants to be able to [explore] a dataset in order to [compare] the effect of different variables on absenteeism and [identify] the most relevant variables around which to frame her intervention policy.
->
-> When Mary logs on to our "Missed Appointments app", she will see an overview of all the available variables in her dataset, according to the number of people that did or did not show up to their medical appointment. She can filter out variables for head-to-head comparisons, and explore which variables are most important in determining whether a patient will show up to their appointment. When she does so, Mary may e.g. notice that "physical disability" appears to be a strong predictor missing appointments, and in fact patients with a physical disability also have the largest number of missed appointments.
->
-> Based on her findings from using our app, Mary hypothesizes that patients with a physical disability could be having a hard time finding transportation to their appointments, and decides she needs to conduct a follow-on study since transportation information is not captured in her current dataset.
+At the start of the day, Alex opens the dashboard and filters to **weekday mornings**. The dashboard highlights stations with **high departure rates** and **low returns**. Alex identifies these high-risk stations and schedules redistribution trucks before peak commute time to replenish them. Later, Alex compares weekend patterns to understand recreational usage and adjust staffing levels accordingly.
 
-### User Stories
-*You can choose to frame your detailed requirements as User Stories...*
+### User Stories / Jobs To Be Done
+1.  **User Story 1:** As an **operations manager**, I want to **identify stations with the highest departures during rush hour** so that I can **prioritize redistribution**.
+2.  **User Story 2:** As an **operations manager**, I want to **compare weekday and weekend demand** so that I can **adjust staffing schedules**.
+3.  **User Story 3:** As a **transportation planner**, I want to **analyze monthly usage trends** so that I can **evaluate whether the system requires expansion**.
 
-> **User Story 1:**
-> As a **policy maker**, I want to **filter appointments by specific demographics (e.g., age, gender)** in order to **determine if specific population groups are disproportionately missing appointments**.
->
-> **User Story 2:**
-> As a **policy maker**, I want to **compare no-show rates between patients with and without specific conditions (e.g., hypertension)** in order to **identify if medical conditions are high-risk factors**.
->
-> **User Story 3:**
-> As a **policy maker**, I want to **visualize no-shows across days of the week** in order to **decide if specific days need scheduling interventions**.
-
-### Jobs to Be Done
-*...or as Jobs to Be Done:*
-
-> **JTBD 1:**
-> **Situation:** When I am reviewing monthly attendance reports...
-> **Motivation:** ...I want to separate routine absences from systemic issues...
-> **Outcome:** ...so I can allocate intervention budget to the right patient groups.
->
-> **JTBD 2:**
-> **Situation:** When investigating a spike in no-shows...
-> **Motivation:** ...I want to see if specific physical disabilities correlate with absenteeism...
-> **Outcome:** ...so I can propose targeted transportation support services.
->
-> **JTBD 3:**
-> **Situation:** When planning clinic hours...
-> **Motivation:** ...I want to see if appointments on Mondays or Fridays are missed more often...
-> **Outcome:** ...so I can optimize the scheduling grid.
+---
 
 ## Section 4: Exploratory Data Analysis
 
@@ -62,8 +72,33 @@
 >
 > **Reflection:** This finding supprts the need for a targeted filter in the dashboard. By allowing bike share suppliers to select start station and hour, they can know how many bikes need to ready at which station before certain hour so that there won't be bike shortage. 
 
+---
+
 ## Section 5: App Sketch & Description
 
-![Dashboard](../img/sketch.png "App Sketch")
+![App Layout](image.png)
 
-> The app contains a landing page that shows the distribution of Birth Years and Trip Start Hour. From the sidebar, the user will be able to filter the data by birth year, trip start hour, trip end hour and user gender. There will be KPI cards at the top that will be related to the end use case of the dashboard. Furthermore, there will be a large map for user to interact will that will either show trip counts by station or other spatial patterns in the data. Other visualizations may be added if other insights can be gleaned from further exploratory data analysis.
+### Description
+The dashboard is designed as a comprehensive control panel for operations managers and planners. It features a collapsible sidebar for filtering and a three-tiered layout for visualizing data.
+
+#### 1. Sidebar Controls (Filters)
+The left-hand sidebar allows the user to slice the data to find specific insights:
+* **Birth Year:** A slider range (e.g., 1899–1997) to filter riders by age, allowing planners to analyze demographic usage patterns.
+* **Start & End Hour:** Sliders (0–23) to isolate specific times of day, such as morning rush hours (7–9 AM) or late-night operations.
+* **User Gender:** Checkboxes to filter by "Male", "Female", or "Unknown".
+* **Reset Filter:** A quick action button to restore the global view.
+
+#### 2. Key Performance Indicators (Top Row)
+Four KPI cards provide an immediate snapshot of system health based on the selected filters:
+* **Average Trip Time:** Monitors efficiency and usage behavior.
+* **Subscriber to Customer Ratio:** Tracks the balance between daily commuters (subscribers) and tourists (customers).
+* **Most Popular Start Station:** Identifies the highest-demand location needing attention.
+* **Most Popular Start Hour:** Pinpoints the peak time of usage.
+
+#### 3. Deep-Dive Visualizations (Middle & Bottom)
+* **Distribution of Birth Years (Histogram):** Visualizes the age profile of riders, helping planners understand who is using the system.
+* **Trip Counts by Start Hour (Bar Chart):** A temporal analysis showing demand peaks. This directly supports the Operations Manager's need to know *when* to schedule redistribution trucks (e.g., observing the spikes at 8 AM and 5 PM).
+* **Map (Bottom Panel):** A geospatial view that plots station locations. This interactive map will update based on the sidebar filters to show where trips are originating and terminating during the selected hours.
+
+#### 4. Interactivity
+The dashboard is fully reactive. As the user adjusts the **Start Hour** slider in the sidebar, the **Map** and **KPI cards** will instantly update to reflect conditions during that specific window, allowing the manager to "play back" the day and see how demand shifts across the city.
