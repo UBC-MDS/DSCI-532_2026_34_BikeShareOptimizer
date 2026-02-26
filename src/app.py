@@ -5,22 +5,31 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from shinywidgets import render_plotly, render_widget, output_widget
 
-df = pd.read_csv("data/raw/201306-citibike-tripdata.csv", parse_dates=['starttime', 'stoptime']).dropna()
+df = pd.read_csv("data/raw/201306-citibike-tripdata.csv", parse_dates=['starttime', 'stoptime'])
 df['start_hour'] = df['starttime'].dt.hour
 df['end_hour'] = df['stoptime'].dt.hour
-
+df['birth year'] = df['birth year'].astype('Int64')
 
 app_ui = ui.page_fluid(
     ui.tags.style("body { font-size: 0.6em; }"),
     ui.panel_title("Citi Bikes"),
     ui.layout_sidebar(
-        ui.sidebar(
-            ui.input_slider(
-                id="birth_year_slider",
-                label="Birth Year",
-                min=df['birth year'].min(),
-                max=df['birth year'].max(),
-                value=[df['birth year'].min(), df['birth year'].max()],
+            ui.sidebar(
+            ui.input_checkbox_group(
+                id="usertype_checkbox",
+                label="User Type",
+                choices=["Subscriber", "Customer"],
+                selected=["Subscriber"],
+            ),
+            ui.panel_conditional(
+                "!input.usertype_checkbox.includes('Customer')",
+                ui.input_slider(
+                    id="birth_year_slider",
+                    label="User Birth Year (Subscribers Only)",
+                    min=int(df['birth year'].min()),
+                    max=int(df['birth year'].max()),
+                    value=[int(df['birth year'].min()), int(df['birth year'].max())],
+                )
             ),
             ui.input_slider(
                 id="start_time_slider",
@@ -78,18 +87,25 @@ app_ui = ui.page_fluid(
 def server(input, output, session):
     @reactive.calc
     def filtered_df():
-        b_min, b_max = input.birth_year_slider()
         s_min, s_max = input.start_time_slider()
         genders = [int(g) for g in input.gender_checkbox()]
-        m = (df['birth year'].between(b_min, b_max) &
-             df['start_hour'].between(s_min, s_max) &
-             df['gender'].isin(genders))
+        usertypes = input.usertype_checkbox()
+        m = (df['start_hour'].between(s_min, s_max) &
+             df['gender'].isin(genders) &
+             df['usertype'].isin(usertypes))
+
+        if "Customer" not in usertypes:
+            b_min, b_max = input.birth_year_slider()
+            m_birth = df['birth year'].between(b_min, b_max)
+            m = m & m_birth
+
         return df[m]
 
     @reactive.effect
     @reactive.event(input.reset)
     def _():
-        ui.update_slider("birth_year_slider", value=[df['birth year'].min(), df['birth year'].max()])
+        ui.update_checkbox_group('usertype_checkbox', selected=["Subscriber"])
+        ui.update_slider("birth_year_slider", value=[int(df['birth year'].min()), int(df['birth year'].max())])
         ui.update_slider("start_time_slider", value=[0, 23])
         ui.update_checkbox_group("gender_checkbox", selected=['0', '1', '2'])
 
@@ -102,14 +118,20 @@ def server(input, output, session):
 
     @render.text
     def s_to_c_ratio():
+        d = filtered_df()
+        if d.empty: return "N/A"
         return '?'
 
     @render.text
     def pop_start_id():
+        d = filtered_df()
+        if d.empty: return "N/A"
         return '?'
 
     @render.text
     def pop_start_hour():
+        d = filtered_df()
+        if d.empty: return "N/A"
         return '?'
 
 
