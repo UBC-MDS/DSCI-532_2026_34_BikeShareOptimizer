@@ -30,7 +30,7 @@ app_ui = ui.page_fluid(
                 value=[0, 23],
             ),
             ui.input_checkbox_group(
-                id="checkbox_group",
+                id="gender_checkbox",
                 label="User Gender",
                 choices={
                     '0': "Unknown",
@@ -80,7 +80,7 @@ def server(input, output, session):
     def filtered_df():
         b_min, b_max = input.birth_year_slider()
         s_min, s_max = input.start_time_slider()
-        genders = [int(g) for g in input.gender_filter()]
+        genders = [int(g) for g in input.gender_checkbox()]
         m = (df['birth year'].between(b_min, b_max) &
              df['start_hour'].between(s_min, s_max) &
              df['gender'].isin(genders))
@@ -91,7 +91,7 @@ def server(input, output, session):
     def _():
         ui.update_slider("birth_year_slider", value=[df['birth year'].min(), df['birth year'].max()])
         ui.update_slider("start_time_slider", value=[0, 23])
-        ui.update_checkbox_group("gender_filter", selected=['0', '1', '2'])
+        ui.update_checkbox_group("gender_checkbox", selected=['0', '1', '2'])
 
     @render.text
     def avg_trip_time():
