@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from shinywidgets import render_plotly, render_widget, output_widget
 
-df = pd.read_csv("../data/raw/201306-citibike-tripdata.csv", parse_dates=['starttime', 'stoptime'])
+df = pd.read_csv("data/raw/201306-citibike-tripdata.csv", parse_dates=['starttime', 'stoptime']).dropna()
 df['start_hour'] = df['starttime'].dt.hour
 df['end_hour'] = df['stoptime'].dt.hour
+
 
 app_ui = ui.page_fluid(
     ui.tags.style("body { font-size: 0.6em; }"),
@@ -24,16 +25,9 @@ app_ui = ui.page_fluid(
             ui.input_slider(
                 id="start_time_slider",
                 label="Start Hour",
-                min=df['start_hour'].min(),
-                max=df['start_hour'].max(),
-                value=[df['start_hour'].min(), df['start_hour'].max()],
-            ),
-            ui.input_slider(
-                id="end_time_slider",
-                label="End Hour",
-                min=df['end_hour'].min(),
-                max=df['end_hour'].max(),
-                value=[df['end_hour'].min(), df['end_hour'].max()],
+                min=0,
+                max=23,
+                value=[0, 23],
             ),
             ui.input_checkbox_group(
                 id="checkbox_group",
@@ -44,10 +38,10 @@ app_ui = ui.page_fluid(
                     '2': "Female",
                 },
                 selected=[
-                    "Unknown", "Male", "Female"
+                    "0", "1", "2"
                 ],
             ),
-            ui.input_action_button("action_button", "Reset filter"),
+            ui.input_action_button("reset", "Reset filter"),
             open="desktop",
         ),
         ui.layout_columns(
@@ -82,7 +76,41 @@ app_ui = ui.page_fluid(
 
 # Server
 def server(input, output, session):
-    pass
+    @reactive.calc
+    def filtered_df():
+        b_min, b_max = input.birth_year_slider()
+        s_min, s_max = input.start_time_slider()
+        genders = [int(g) for g in input.gender_filter()]
+        m = (df['birth year'].between(b_min, b_max) &
+             df['start_hour'].between(s_min, s_max) &
+             df['gender'].isin(genders))
+        return df[m]
+
+    @reactive.effect
+    @reactive.event(input.reset)
+    def _():
+        ui.update_slider("birth_year_slider", value=[df['birth year'].min(), df['birth year'].max()])
+        ui.update_slider("start_time_slider", value=[0, 23])
+        ui.update_checkbox_group("gender_filter", selected=['0', '1', '2'])
+
+    @render.text
+    def avg_trip_time():
+        d = filtered_df()
+        if d.empty: return "N/A"
+        avg = d['tripduration'].mean() / 60
+        return f"{avg:.1f} mins"
+
+    @render.text
+    def s_to_c_ratio():
+        return '?'
+
+    @render.text
+    def pop_start_id():
+        return '?'
+
+    @render.text
+    def pop_start_hour():
+        return '?'
 
 
 # Create app
