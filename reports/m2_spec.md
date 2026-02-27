@@ -73,11 +73,11 @@ Before writing code, create `reports/m2_spec.md` to plan your implementation. Th
 
 Review your M1 job stories in light of your deployment setup and any new insights. Update or add stories as needed, and track their status:
 
-| #   | Job Story                       | Status         | Notes                         |
-| --- | ------------------------------- | -------------- | ----------------------------- |
-| 1   | When I … I want to … so I can … | ✅ Implemented |                               |
-| 2   | When I … I want to … so I can … | 🔄 Revised     | Changed from X to Y because … |
-| 3   | When I … I want to … so I can … | ⏳ Pending M3  |                               |
+| #   | Job Story                       | Status       | Notes                         |
+| --- | ------------------------------- |--------------| ----------------------------- |
+| 1   | I want to **identify stations with the highest departures during rush hour** so that I can **prioritize redistribution**|  |                               |
+| 2   | I want to **compare weekday and weekend demand** so that I can **adjust staffing schedules** |              |  |
+| 3   | I want to **analyze monthly usage trends** so that I can **evaluate whether the system requires expansion** |  |                               |
 
 ### 2.2 Component Inventory
 
