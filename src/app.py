@@ -157,10 +157,11 @@ def server(input, output, session):
 
     @render.text
     def pop_start_id():
-        
         d = filtered_df()
-        if d.empty: return "N/A"
-        return '?'
+        if d.empty:
+            return "N/A"
+
+        station = d["start station name"].value_counts().idxmax()
         return station
 
     @render.text
