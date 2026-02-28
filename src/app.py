@@ -9,6 +9,8 @@ df = pd.read_csv("data/raw/201306-citibike-tripdata.csv", parse_dates=['starttim
 df['start_hour'] = df['starttime'].dt.hour
 df['end_hour'] = df['stoptime'].dt.hour
 df['birth year'] = df['birth year'].astype('Int64')
+df['day_of_week'] = df['starttime'].dt.day_name()
+df['month'] = df['starttime'].dt.month_name()
 
 app_ui = ui.page_fluid(
     ui.tags.style("body { font-size: 0.6em; }"),
@@ -37,6 +39,19 @@ app_ui = ui.page_fluid(
                 min=0,
                 max=23,
                 value=[0, 23],
+            ),ui.input_selectize(
+                id="day_of_week_filter",
+                label="Day of Week",
+                choices=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                selected=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                multiple=True,
+            ),
+            ui.input_selectize(
+                id="month_filter",
+                label="Month",
+                choices=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+                selected=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+                multiple=True,
             ),
             ui.input_checkbox_group(
                 id="gender_checkbox",
@@ -87,12 +102,19 @@ app_ui = ui.page_fluid(
 def server(input, output, session):
     @reactive.calc
     def filtered_df():
+        # Convert sidebar options to variables
         s_min, s_max = input.start_time_slider()
         genders = [int(g) for g in input.gender_checkbox()]
         usertypes = input.usertype_checkbox()
+        days = input.day_of_week_filter()
+        months = input.month_filter()
+
+        # Mask
         m = (df['start_hour'].between(s_min, s_max) &
              df['gender'].isin(genders) &
-             df['usertype'].isin(usertypes))
+             df['usertype'].isin(usertypes) &
+             df['day_of_week'].isin(days) &
+             df['month'].isin(months))
 
         if "Customer" not in usertypes:
             b_min, b_max = input.birth_year_slider()
@@ -108,6 +130,8 @@ def server(input, output, session):
         ui.update_slider("birth_year_slider", value=[int(df['birth year'].min()), int(df['birth year'].max())])
         ui.update_slider("start_time_slider", value=[0, 23])
         ui.update_checkbox_group("gender_checkbox", selected=['0', '1', '2'])
+        ui.update_selectize("day_of_week_filter", selected=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
+        ui.update_selectize("month_filter", selected=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"])
 
     @render.text
     def avg_trip_time():
