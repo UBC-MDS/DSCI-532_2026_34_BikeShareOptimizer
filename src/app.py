@@ -171,6 +171,62 @@ def server(input, output, session):
         if d.empty: return "N/A"
         return '?'
     
+    @render_plotly
+    def barplot1():
+        d = filtered_df()
+        if d.empty:
+            return px.histogram(title="No data available")
+            
+        fig = px.histogram(
+            d, 
+            x="birth year", 
+            nbins=40,
+            template="plotly_white",
+            color_discrete_sequence=['#6C5CE7'] # A nice modern purple
+        )
+        
+        # Style the bars
+        fig.update_traces(
+            marker_line_color='white', 
+            marker_line_width=1.5,
+            opacity=0.8
+        )
+        
+        # Polish the layout
+        fig.update_layout(
+            title="Distribution of Subscriber Birth Years",
+            xaxis_title="Birth Year",
+            yaxis_title="Count of Trips",
+            bargap=0.1,             # Adds visual breathing room between bars
+            hovermode="x unified",  # Cleaner hover interaction
+            margin=dict(l=20, r=20, t=40, b=20) # Tighten the edges
+        )
+        
+        return fig
+
+    @render_plotly
+    def map():
+        d = filtered_df()
+        if d.empty:
+            return px.scatter_mapbox(title="No data available")
+        
+        # Aggregating by station name significantly improves performance
+        # otherwise the map will try to plot every single trip
+        station_agg = d.groupby("start station name").agg({
+            "start station latitude": "first",
+            "start station longitude": "first"
+        }).reset_index()
+        
+        fig = px.scatter_mapbox(
+            station_agg, 
+            lat="start station latitude", 
+            lon="start station longitude", 
+            hover_name="start station name",
+            zoom=10
+        )
+        fig.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0})
+        return fig
+    
     
 # Create app
 app = App(app_ui, server)
