@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from shinywidgets import render_plotly, render_widget, output_widget
+import plotly.express as px
 
 df = pd.read_csv("data/raw/201306-citibike-tripdata.csv", parse_dates=['starttime', 'stoptime'])
 df['start_hour'] = df['starttime'].dt.hour
@@ -83,7 +84,7 @@ app_ui = ui.page_fluid(
             ),
             ui.card(
                 ui.card_header("Trip Counts by Start Hour"),
-                output_widget("barplot"),
+                output_widget("start_hour_barplot"),
                 full_screen=True,
             ),
             col_widths=[6, 6],
@@ -156,7 +157,19 @@ def server(input, output, session):
     def pop_start_hour():
         d = filtered_df()
         if d.empty: return "N/A"
-        return '?'
+        start_hour=d['start_hour'].mode()[0]
+        return f"{start_hour}"
+
+    @render_plotly
+    def start_hour_barplot():
+        d = filtered_df()
+        # group and count
+        trips_per_start_hour = (
+            d.groupby(['start_hour'])
+              .size()
+              .reset_index(name='trip_count')
+        )
+        return px.bar(trips_per_start_hour, x='start_hour', y='trip_count')
 
 
 # Create app
