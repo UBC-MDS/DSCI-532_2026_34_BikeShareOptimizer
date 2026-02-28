@@ -143,21 +143,32 @@ def server(input, output, session):
     @render.text
     def s_to_c_ratio():
         d = filtered_df()
-        if d.empty: return "N/A"
-        return '?'
+        if d.empty:
+            return "N/A"
+
+        subscribers = (d["usertype"] == "Subscriber").sum()
+        customers = (d["usertype"] == "Customer").sum()
+
+        if customers == 0:
+            return "∞"
+
+        ratio = subscribers / customers
+        return f"{ratio:.2f}"
 
     @render.text
     def pop_start_id():
+        
         d = filtered_df()
         if d.empty: return "N/A"
         return '?'
+        return station
 
     @render.text
     def pop_start_hour():
         d = filtered_df()
         if d.empty: return "N/A"
         return '?'
-
-
+    
+    
 # Create app
 app = App(app_ui, server)
