@@ -169,7 +169,19 @@ def server(input, output, session):
     def pop_start_hour():
         d = filtered_df()
         if d.empty: return "N/A"
-        return '?'
+        start_hour=d['start_hour'].mode()[0]
+        return f"{start_hour}"
+
+    @render_plotly
+    def start_hour_barplot():
+        d = filtered_df()
+        # group and count
+        trips_per_start_hour = (
+            d.groupby(['start_hour'])
+              .size()
+              .reset_index(name='trip_count')
+        )
+        return px.bar(trips_per_start_hour, x='start_hour', y='trip_count')
     
     @render_plotly
     def barplot1():
