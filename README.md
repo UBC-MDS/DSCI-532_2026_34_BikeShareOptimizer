@@ -9,7 +9,7 @@ Check out the latest stable version of our app:
 ## 🎥 Quick Demo
 *A 15-30 second demo showing how the filters interact with the map and distribution charts.*
 
-![Dashboard Demo](demo.gif)
+![Dashboard Demo](image-1.png)
 
 ## 🎯 Key Features
 * **Global Sidebar Filtering**: Quickly drill down into data by User Type, Birth Year, Time, Day of the Week, Month, and Gender.
