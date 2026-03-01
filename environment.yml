@@ -21,3 +21,5 @@ dependencies:
   - jupyterlab
   - ipykernel
 
+  - pip:
+      - shiny-express
