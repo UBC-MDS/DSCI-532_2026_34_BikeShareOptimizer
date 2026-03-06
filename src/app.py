@@ -31,6 +31,7 @@ app_ui = ui.page_fluid(
                     min=int(df['birth year'].min()),
                     max=int(df['birth year'].max()),
                     value=[int(df['birth year'].min()), int(df['birth year'].max())],
+                    sep=''
                 )
             ),
             ui.input_slider(
