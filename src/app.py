@@ -205,7 +205,31 @@ def server(input, output, session):
               .size()
               .reset_index(name='trip_count')
         )
-        return px.bar(trips_per_start_hour, x='start_hour', y='trip_count')
+
+        fig = px.bar(
+            trips_per_start_hour,
+            x='start_hour',
+            y='trip_count',
+            template="plotly_white",
+            color_discrete_sequence=['#6C5CE7']
+        )
+
+        fig.update_traces(
+            marker_line_color='white',
+            marker_line_width=1.5,
+            opacity=0.8
+        )
+
+        fig.update_layout(
+            title="Trip Counts by Start Hour",
+            xaxis_title="Start Hour",
+            yaxis_title="Count of Trips",
+            bargap=0.1,
+            hovermode="x unified",
+            margin=dict(l=20, r=20, t=40, b=20)
+        )
+
+        return fig
     
     @render_plotly
     def barplot1():
