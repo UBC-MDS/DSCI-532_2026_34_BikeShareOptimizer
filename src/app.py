@@ -144,6 +144,8 @@ def server(input, output, session):
 
     @render.text
     def avg_trip_time():
+        if not input.usertype_checkbox():
+            return 'Please select a User Type'
         d = filtered_df()
         if d.empty: return "N/A"
         avg = d['tripduration'].mean() / 60
@@ -151,6 +153,8 @@ def server(input, output, session):
 
     @render.text
     def s_to_c_ratio():
+        if not input.usertype_checkbox():
+            return 'Please select a User Type'
         d = filtered_df()
         if d.empty:
             return "N/A"
@@ -166,6 +170,8 @@ def server(input, output, session):
 
     @render.text
     def pop_start_id():
+        if not input.usertype_checkbox():
+            return 'Please select a User Type'
         d = filtered_df()
         if d.empty:
             return "N/A"
@@ -175,6 +181,8 @@ def server(input, output, session):
 
     @render.text
     def pop_start_hour():
+        if not input.usertype_checkbox():
+            return 'Please select a User Type'
         d = filtered_df()
         if d.empty: return "N/A"
         start_hour=d['start_hour'].mode()[0]
@@ -182,7 +190,15 @@ def server(input, output, session):
 
     @render_plotly
     def start_hour_barplot():
+        empty_df = pd.DataFrame({'start_hour': [], 'trip_count': []})
+
+        if not input.usertype_checkbox():
+            return px.bar(empty_df, title='Please select a User Type', x='start_hour', y='trip_count')
+
         d = filtered_df()
+
+        if d.empty:
+            return px.bar(empty_df, title="No data available", x='start_hour', y='trip_count')
         # group and count
         trips_per_start_hour = (
             d.groupby(['start_hour'])
@@ -193,9 +209,15 @@ def server(input, output, session):
     
     @render_plotly
     def barplot1():
+        empty_df = pd.DataFrame({'birth year': []})
+
+        if not input.usertype_checkbox():
+            return px.histogram(empty_df, x="birth year", title="No data available")
+
         d = filtered_df()
+
         if d.empty:
-            return px.histogram(title="No data available")
+            return px.histogram(empty_df, x="birth year", title="No data available")
             
         fig = px.histogram(
             d, 
@@ -226,9 +248,12 @@ def server(input, output, session):
 
     @render_plotly
     def map():
+        if not input.usertype_checkbox():
+            return px.scatter_mapbox(lat=[0], lon=[0], zoom=0).update_layout(title="Please select a User Type")
         d = filtered_df()
         if d.empty:
-            return px.scatter_mapbox(title="No data available")
+            # Provide an empty scatter mapbox safely
+            return px.scatter_mapbox(lat=[0], lon=[0], zoom=0).update_layout(title="No data available")
         
         # Aggregating by station name significantly improves performance
         # otherwise the map will try to plot every single trip
