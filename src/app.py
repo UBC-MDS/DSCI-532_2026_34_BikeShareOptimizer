@@ -274,26 +274,37 @@ def server(input, output, session):
     def map():
         if not input.usertype_checkbox():
             return px.scatter_mapbox(lat=[0], lon=[0], zoom=0).update_layout(title="Please select a User Type")
+
         d = filtered_df()
+
         if d.empty:
             # Provide an empty scatter mapbox safely
             return px.scatter_mapbox(lat=[0], lon=[0], zoom=0).update_layout(title="No data available")
         
         # Aggregating by station name significantly improves performance
         # otherwise the map will try to plot every single trip
-        station_agg = d.groupby("start station name").agg({
-            "start station latitude": "first",
-            "start station longitude": "first"
-        }).reset_index()
+        station_agg = d.groupby("start station name").agg(
+            latitude=("start station latitude", "first"),
+            longitude=("start station longitude", "first"),
+            trip_count=("start station name", "size")
+        ).reset_index()
         
         fig = px.scatter_mapbox(
             station_agg, 
-            lat="start station latitude", 
-            lon="start station longitude", 
+            lat="latitude",
+            lon="longitude",
+            color="trip_count",
+            color_continuous_scale='Purples',
             hover_name="start station name",
+            hover_data=['latitude', 'longitude', "trip_count"],
+            labels={"latitude": "Latitude", "longitude": "Longitude", "trip_count": "Trip Count"},
             zoom=10
         )
-        fig.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0})
+
+        fig.update_layout(mapbox_style="open-street-map",
+                          margin={"r":0,"t":0,"l":0,"b":0},
+                          coloraxis_colorbar=dict(title='Trip Count')
+                          )
         return fig
     
     
