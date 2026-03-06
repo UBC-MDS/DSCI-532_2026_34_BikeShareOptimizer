@@ -14,7 +14,6 @@ df['day_of_week'] = df['starttime'].dt.day_name()
 df['month'] = df['starttime'].dt.month_name()
 
 app_ui = ui.page_fluid(
-    ui.tags.style("body { font-size: 0.6em; }"),
     ui.panel_title("Citi Bikes"),
     ui.layout_sidebar(
             ui.sidebar(
