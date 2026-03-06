@@ -44,14 +44,14 @@ app_ui = ui.page_fluid(
                 id="day_of_week_filter",
                 label="Day of Week",
                 choices=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-                selected=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                selected=[],
                 multiple=True,
             ),
             ui.input_selectize(
                 id="month_filter",
                 label="Month",
                 choices=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-                selected=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+                selected=[],
                 multiple=True,
             ),
             ui.input_checkbox_group(
