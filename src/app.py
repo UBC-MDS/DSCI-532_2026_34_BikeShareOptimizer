@@ -141,8 +141,8 @@ def server(input, output, session):
         ui.update_slider("birth_year_slider", value=[int(df['birth year'].min()), int(df['birth year'].max())])
         ui.update_slider("start_time_slider", value=[0, 23])
         ui.update_checkbox_group("gender_checkbox", selected=['0', '1', '2'])
-        ui.update_selectize("day_of_week_filter", selected=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
-        ui.update_selectize("month_filter", selected=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"])
+        ui.update_selectize("day_of_week_filter", selected=[])
+        ui.update_selectize("month_filter", selected=[])
 
     @render.text
     def avg_trip_time():
