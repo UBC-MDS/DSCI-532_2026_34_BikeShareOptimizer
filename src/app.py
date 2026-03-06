@@ -110,6 +110,16 @@ def server(input, output, session):
         days = input.day_of_week_filter()
         months = input.month_filter()
 
+        # If empty, default to all
+        days = input.day_of_week_filter()
+        if not days:
+            days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+        months = input.month_filter()
+        if not months:
+            months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+                      "November", "December"]
+
         # Mask
         m = (df['start_hour'].between(s_min, s_max) &
              df['gender'].isin(genders) &
