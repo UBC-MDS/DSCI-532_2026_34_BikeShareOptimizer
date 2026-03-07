@@ -5,7 +5,16 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from shinywidgets import render_plotly, render_widget, output_widget
 import plotly.express as px
+import os
+from dotenv import load_dotenv
+import querychat
+from chatlas import ChatAnthropic
 
+# Read Anthropic API key
+load_dotenv()
+API_KEY = os.environ.get("ANTHROPIC_API_KEY")
+
+# Read Data
 df = pd.read_csv("data/raw/201306-citibike-tripdata.csv", parse_dates=['starttime', 'stoptime'])
 df['start_hour'] = df['starttime'].dt.hour
 df['end_hour'] = df['stoptime'].dt.hour
@@ -13,9 +22,30 @@ df['birth year'] = df['birth year'].astype('Int64')
 df['day_of_week'] = df['starttime'].dt.day_name()
 df['month'] = df['starttime'].dt.month_name()
 
-app_ui = ui.page_fluid(
-    ui.panel_title("Citi Bikes"),
-    ui.layout_sidebar(
+# Initialize QueryChat
+qc = querychat.QueryChat(
+    df.copy(),
+    "BikeShareOptimizer",
+    greeting="👋 Hi! I'm your BikeShare assistant. Ask me about trends in Citi Bike data!",
+    data_description="""
+    Citi Bike trip dataset.
+    Columns:
+    - starttime, stoptime: Datetimes
+    - start_hour, end_hour: Integer (0-23)
+    - birth year: Integer
+    - usertype: 'Subscriber' or 'Customer'
+    - gender: 0 (Unknown), 1 (Male), 2 (Female)
+    - start station name: String
+    
+    Use this to filter by demographics, time of day, or station popularity.
+    """,
+    client=ChatAnthropic(model="claude-sonnet-4-0", api_key=API_KEY),
+)
+
+# UI
+app_ui = ui.page_navbar(
+    ui.nav_panel("Citi Bikes - Main Dashboard", 
+        ui.layout_sidebar(
             ui.sidebar(
             ui.input_checkbox_group(
                 id="usertype_checkbox",
@@ -96,11 +126,37 @@ app_ui = ui.page_fluid(
                 full_screen=True,
             )
         ),
+      ),
     ),
+
+    ui.nav_panel("AI Insights", 
+        ui.layout_sidebar(
+            qc.sidebar(),
+            ui.card(
+                ui.card_header("AI Filtered Data"),
+                ui.output_data_frame("ai_data_table")
+            )
+        )
+    )
 )
+
 
 # Server
 def server(input, output, session):
+    qc_vals = qc.server()
+
+    @reactive.calc
+    def ai_df():
+        return qc_vals.df()
+
+    @render.data_frame
+    def ai_data_table():
+        return render.DataGrid(ai_df())
+
+    @render.text
+    def chat_crime_count():
+        return str(len(ai_df()))
+
     @reactive.calc
     def filtered_df():
         # Convert sidebar options to variables
