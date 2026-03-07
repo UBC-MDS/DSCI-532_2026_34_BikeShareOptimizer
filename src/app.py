@@ -14,7 +14,6 @@ df['day_of_week'] = df['starttime'].dt.day_name()
 df['month'] = df['starttime'].dt.month_name()
 
 app_ui = ui.page_fluid(
-    ui.tags.style("body { font-size: 0.6em; }"),
     ui.panel_title("Citi Bikes"),
     ui.layout_sidebar(
             ui.sidebar(
@@ -32,6 +31,7 @@ app_ui = ui.page_fluid(
                     min=int(df['birth year'].min()),
                     max=int(df['birth year'].max()),
                     value=[int(df['birth year'].min()), int(df['birth year'].max())],
+                    sep=''
                 )
             ),
             ui.input_slider(
@@ -44,14 +44,14 @@ app_ui = ui.page_fluid(
                 id="day_of_week_filter",
                 label="Day of Week",
                 choices=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-                selected=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                selected=[],
                 multiple=True,
             ),
             ui.input_selectize(
                 id="month_filter",
                 label="Month",
                 choices=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-                selected=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+                selected=[],
                 multiple=True,
             ),
             ui.input_checkbox_group(
@@ -110,6 +110,14 @@ def server(input, output, session):
         days = input.day_of_week_filter()
         months = input.month_filter()
 
+        # If empty, default to all
+        if not days:
+            days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
+        if not months:
+            months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+                      "November", "December"]
+
         # Mask
         m = (df['start_hour'].between(s_min, s_max) &
              df['gender'].isin(genders) &
@@ -131,11 +139,13 @@ def server(input, output, session):
         ui.update_slider("birth_year_slider", value=[int(df['birth year'].min()), int(df['birth year'].max())])
         ui.update_slider("start_time_slider", value=[0, 23])
         ui.update_checkbox_group("gender_checkbox", selected=['0', '1', '2'])
-        ui.update_selectize("day_of_week_filter", selected=["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"])
-        ui.update_selectize("month_filter", selected=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"])
+        ui.update_selectize("day_of_week_filter", selected=[])
+        ui.update_selectize("month_filter", selected=[])
 
     @render.text
     def avg_trip_time():
+        if not input.usertype_checkbox():
+            return 'Please select a User Type'
         d = filtered_df()
         if d.empty: return "N/A"
         avg = d['tripduration'].mean() / 60
@@ -143,6 +153,8 @@ def server(input, output, session):
 
     @render.text
     def s_to_c_ratio():
+        if not input.usertype_checkbox():
+            return 'Please select a User Type'
         d = filtered_df()
         if d.empty:
             return "N/A"
@@ -158,6 +170,8 @@ def server(input, output, session):
 
     @render.text
     def pop_start_id():
+        if not input.usertype_checkbox():
+            return 'Please select a User Type'
         d = filtered_df()
         if d.empty:
             return "N/A"
@@ -167,6 +181,8 @@ def server(input, output, session):
 
     @render.text
     def pop_start_hour():
+        if not input.usertype_checkbox():
+            return 'Please select a User Type'
         d = filtered_df()
         if d.empty: return "N/A"
         start_hour=d['start_hour'].mode()[0]
@@ -174,20 +190,58 @@ def server(input, output, session):
 
     @render_plotly
     def start_hour_barplot():
+        empty_df = pd.DataFrame({'start_hour': [], 'trip_count': []})
+
+        if not input.usertype_checkbox():
+            return px.bar(empty_df, title='Please select a User Type', x='start_hour', y='trip_count')
+
         d = filtered_df()
+
+        if d.empty:
+            return px.bar(empty_df, title="No data available", x='start_hour', y='trip_count')
         # group and count
         trips_per_start_hour = (
             d.groupby(['start_hour'])
               .size()
               .reset_index(name='trip_count')
         )
-        return px.bar(trips_per_start_hour, x='start_hour', y='trip_count')
+
+        fig = px.bar(
+            trips_per_start_hour,
+            x='start_hour',
+            y='trip_count',
+            template="plotly_white",
+            color_discrete_sequence=['#6C5CE7']
+        )
+
+        fig.update_traces(
+            marker_line_color='white',
+            marker_line_width=1.5,
+            opacity=0.8
+        )
+
+        fig.update_layout(
+            title="Trip Counts by Start Hour",
+            xaxis_title="Start Hour",
+            yaxis_title="Count of Trips",
+            bargap=0.1,
+            hovermode="x unified",
+            margin=dict(l=20, r=20, t=40, b=20)
+        )
+
+        return fig
     
     @render_plotly
     def barplot1():
+        empty_df = pd.DataFrame({'birth year': []})
+
+        if not input.usertype_checkbox():
+            return px.histogram(empty_df, x="birth year", title="No data available")
+
         d = filtered_df()
+
         if d.empty:
-            return px.histogram(title="No data available")
+            return px.histogram(empty_df, x="birth year", title="No data available")
             
         fig = px.histogram(
             d, 
@@ -218,25 +272,39 @@ def server(input, output, session):
 
     @render_plotly
     def map():
+        if not input.usertype_checkbox():
+            return px.scatter_mapbox(lat=[0], lon=[0], zoom=0).update_layout(title="Please select a User Type")
+
         d = filtered_df()
+
         if d.empty:
-            return px.scatter_mapbox(title="No data available")
+            # Provide an empty scatter mapbox safely
+            return px.scatter_mapbox(lat=[0], lon=[0], zoom=0).update_layout(title="No data available")
         
         # Aggregating by station name significantly improves performance
         # otherwise the map will try to plot every single trip
-        station_agg = d.groupby("start station name").agg({
-            "start station latitude": "first",
-            "start station longitude": "first"
-        }).reset_index()
+        station_agg = d.groupby("start station name").agg(
+            latitude=("start station latitude", "first"),
+            longitude=("start station longitude", "first"),
+            trip_count=("start station name", "size")
+        ).reset_index()
         
         fig = px.scatter_mapbox(
             station_agg, 
-            lat="start station latitude", 
-            lon="start station longitude", 
+            lat="latitude",
+            lon="longitude",
+            color="trip_count",
+            color_continuous_scale='Purples',
             hover_name="start station name",
+            hover_data=['latitude', 'longitude', "trip_count"],
+            labels={"latitude": "Latitude", "longitude": "Longitude", "trip_count": "Trip Count"},
             zoom=10
         )
-        fig.update_layout(mapbox_style="open-street-map", margin={"r":0,"t":0,"l":0,"b":0})
+
+        fig.update_layout(mapbox_style="open-street-map",
+                          margin={"r":0,"t":0,"l":0,"b":0},
+                          coloraxis_colorbar=dict(title='Trip Count')
+                          )
         return fig
     
     
