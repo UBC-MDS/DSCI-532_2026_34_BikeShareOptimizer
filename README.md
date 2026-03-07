@@ -3,13 +3,14 @@ Welcome to the **BikeShare Optimizer Dashboard**! This dashboard is designed to 
 
 ## 🚀 Live Dashboard
 Check out the latest stable version of our app:
-> **[View the Deployed Dashboard - Main](https://019ca6f9-fe48-634e-8e10-893b8478d675.share.connect.posit.cloud/)**
-> **[View the Deployed Dashboard - Dev](https://019ca6f4-c5d0-3446-7380-7e1c8d3bac42.share.connect.posit.cloud/)**
+- **[View the Deployed Dashboard - Main](https://019ca6f9-fe48-634e-8e10-893b8478d675.share.connect.posit.cloud/)**
+- **[View the Deployed Dashboard - Dev](https://019ca6f4-c5d0-3446-7380-7e1c8d3bac42.share.connect.posit.cloud/)**
 
 ## 🎥 Quick Demo
 *A 15-30 second demo showing how the filters interact with the map and distribution charts.*
 
-![Dashboard Demo](img/image-1.png)
+![Dashboard Demo](img/demo.gif)
+
 
 ## 🎯 Key Features
 * **Global Sidebar Filtering**: Quickly drill down into data by User Type, Birth Year, Time, Day of the Week, Month, and Gender.
