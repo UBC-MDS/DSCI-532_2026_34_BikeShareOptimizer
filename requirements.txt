@@ -120,8 +120,8 @@ pycparser==2.22
 pydantic==2.12.5
 pydantic_core==2.41.5
 Pygments==2.19.2
-pyobjc-core==12.1
-pyobjc-framework-Cocoa==12.1
+pyobjc-core==12.1; sys_platform == 'darwin'
+pyobjc-framework-Cocoa==12.1; sys_platform == 'darwin'
 pyogrio==0.12.1
 pyparsing==3.3.2
 pyproj==3.7.2
@@ -148,7 +148,7 @@ seaborn==0.13.2
 Send2Trash==2.1.0
 setuptools==82.0.0
 shapely==2.1.2
-shiny==1.5.1
+shiny>=0.6
 shinychat==0.2.9
 shinywidgets==0.7.1
 six==1.17.0
