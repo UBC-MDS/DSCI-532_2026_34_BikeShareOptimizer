@@ -17,6 +17,7 @@ Check out the latest stable version of our app:
 * **KPI Summaries**: Instantly view Average Trip Time, Subscriber/Customer ratios, and peak station popularity.
 * **Interactive Maps**: Visualize station density and usage patterns across the city using an interactive map.
 * **Demographic Insights**: Explore the age distribution of our subscriber base with dynamic histogram visualizations.
+* **AI Chat Box**: Enter the query in plain text and the corresponding results can be shown on the side. 
 
 ## 🛠 For Contributors
 If you want to run this app locally, follow these steps:
