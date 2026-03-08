@@ -394,6 +394,9 @@ def server(input, output, session):
 
         d = ai_df()
 
+        if len(d) > 20000: #to prevent rendering lag
+            d = d.sample(20000)
+
         if d.empty:
             return px.bar(title="No AI filtered data available")
 
@@ -404,13 +407,16 @@ def server(input, output, session):
         )
 
         fig = px.bar(
-            agg,
-            x="start_hour",
-            y="trip_count",
-            template="plotly_white",
-            color_discrete_sequence=['#6C5CE7'],
-            hover_data={"trip_count": True}
-        )
+                agg,
+                x="start_hour",
+                y="trip_count",
+                template="plotly_white",
+                color_discrete_sequence=['#6C5CE7'],
+                hover_data={
+                    "trip_count": True,
+                    "start_hour": True
+                }
+        )u
 
         fig.update_layout(
             title="AI Selected Trips by Start Hour",
@@ -425,6 +431,9 @@ def server(input, output, session):
     def ai_usertype_plot():
 
         d = ai_df()
+
+        if len(d) > 20000: #to prevent rendering lag
+            d = d.sample(20000)
 
         if d.empty:
             return px.bar(title="No AI filtered data available")
@@ -441,7 +450,10 @@ def server(input, output, session):
             y="trip_count",
             template="plotly_white",
             color="usertype",
-            hover_data={"trip_count": True}
+            hover_data={
+                "usertype": True,
+                "trip_count": True
+            }
         )
 
         fig.update_layout(
