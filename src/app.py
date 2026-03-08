@@ -416,7 +416,7 @@ def server(input, output, session):
                     "trip_count": True,
                     "start_hour": True
                 }
-        )u
+        )
 
         fig.update_layout(
             title="AI Selected Trips by Start Hour",
