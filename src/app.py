@@ -177,7 +177,22 @@ def server(input, output, session):
 
     @render.data_frame
     def ai_data_table():
-        return render.DataGrid(ai_df())
+        d = ai_df()
+
+        if d.empty:
+            return render.DataGrid(pd.DataFrame({"Message": ["Ask the AI a question to generate data"]}))
+
+        return render.DataGrid(d)
+    
+    @render.download(filename="ai_filtered_data.csv")
+    def download_ai_data():
+        d = ai_df()
+
+        if d.empty:
+            yield "No data available"
+            return
+
+        yield d.to_csv(index=False)
 
     @render.text
     def chat_crime_count():
