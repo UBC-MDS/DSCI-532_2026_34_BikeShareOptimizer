@@ -389,6 +389,37 @@ def server(input, output, session):
                           )
         return fig
     
+    @render_plotly
+    def ai_start_hour_plot():
+
+        d = ai_df()
+
+        if d.empty:
+            return px.bar(title="No AI filtered data available")
+
+        agg = (
+            d.groupby("start_hour")
+            .size()
+            .reset_index(name="trip_count")
+        )
+
+        fig = px.bar(
+            agg,
+            x="start_hour",
+            y="trip_count",
+            template="plotly_white",
+            color_discrete_sequence=['#6C5CE7'],
+            hover_data={"trip_count": True}
+        )
+
+        fig.update_layout(
+            title="AI Selected Trips by Start Hour",
+            xaxis_title="Start Hour",
+            yaxis_title="Trip Count",
+            hovermode="x unified"
+        )
+
+        return fig
     
 # Create app
 app = App(app_ui, server)
