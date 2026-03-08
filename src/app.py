@@ -130,14 +130,28 @@ app_ui = ui.page_navbar(
     ),
 
     ui.nav_panel("AI Insights", 
-        ui.layout_sidebar(
-            qc.sidebar(),
+    ui.layout_sidebar(
+        qc.sidebar(),
+        ui.layout_columns(
             ui.card(
                 ui.card_header("AI Filtered Data"),
+                ui.download_button("download_ai_data", "Download Data"),
                 ui.output_data_frame("ai_data_table")
-            )
+            ),
+            ui.card(
+                ui.card_header("AI Start Hour Trends"),
+                output_widget("ai_start_hour_plot"),
+                full_screen=True,
+            ),
+            ui.card(
+                ui.card_header("AI User Type Distribution"),
+                output_widget("ai_usertype_plot"),
+                full_screen=True,
+            ),
+            col_widths=[6,6]
         )
     )
+)
 )
 
 
