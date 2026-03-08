@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2026-03-07 (Milestone 3)
+
+### Added
+* **Tabs**: Added `AI Insights` tab and put the previous page into `Citi Bikes - Main Dashboard` tab. 
+* **Component Inventory**:
+    * **Chat Boxes**: Implemented AI chat box. PR #34. 
+    * **Data Frame Table**: Added `AI Filtered Data` to show results of chat box queries.
+* **Deployment**: Configured Posit Connect Cloud with separate `main` (stable) and `dev` (preview) pipelines.
+* **Documentation**: Created `reports/m3_spec.md` with Reactivity Diagram and Component Inventory.
+
+### Changed
+* **Default Logic**: Update filtered_df logic to default of empty.
+* **Default Values**: Update reset logic to new default values.
+* **Remove Definitions**: Remove excess definitions from app.py.
+* **User Type Prompts**: Add prompts to select user type in app.py.
+
+### Fixed
+* **Font Size**: Fixed font size of the dashboard. 
+* **Selected Years**: Change display of selected years in slider.
+* **Default Empty**: Change the default selection of month and Day of Week to be empty.
+* **Consistent Schema**: Fix color schema inconsistencies between plots. 
+* **Map Box**: Improve mapbox aggregation and empty-data handling
+
+
+### Known Issues
+* **None**
+
+### Reflection
+* **Publishing**: Publishing sometimes can get unexpected errors and requirement.txt needs to specify version for certain dependencies. 
+
+---
+
 ## [0.2.0] - 2026-02-28 (Milestone 2)
 
 ### Added
