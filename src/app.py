@@ -130,14 +130,28 @@ app_ui = ui.page_navbar(
     ),
 
     ui.nav_panel("AI Insights", 
-        ui.layout_sidebar(
-            qc.sidebar(),
+    ui.layout_sidebar(
+        qc.sidebar(),
+        ui.layout_columns(
             ui.card(
                 ui.card_header("AI Filtered Data"),
+                ui.download_button("download_ai_data", "Download Data"),
                 ui.output_data_frame("ai_data_table")
-            )
+            ),
+            ui.card(
+                ui.card_header("AI Start Hour Trends"),
+                output_widget("ai_start_hour_plot"),
+                full_screen=True,
+            ),
+            ui.card(
+                ui.card_header("AI User Type Distribution"),
+                output_widget("ai_usertype_plot"),
+                full_screen=True,
+            ),
+            col_widths=[6,6]
         )
     )
+)
 )
 
 
@@ -147,7 +161,19 @@ def server(input, output, session):
 
     @reactive.calc
     def ai_df():
-        return qc_vals.df()
+        try:
+            d = qc_vals.df()
+
+            if d is None:
+                return pd.DataFrame()
+
+            if not isinstance(d, pd.DataFrame):
+                return pd.DataFrame()
+
+            return d
+
+        except Exception:
+            return pd.DataFrame()
 
     @render.data_frame
     def ai_data_table():
@@ -361,6 +387,82 @@ def server(input, output, session):
                           margin={"r":0,"t":0,"l":0,"b":0},
                           coloraxis_colorbar=dict(title='Trip Count')
                           )
+        return fig
+    
+    @render_plotly
+    def ai_start_hour_plot():
+
+        d = ai_df()
+
+        if len(d) > 20000: #to prevent rendering lag
+            d = d.sample(20000)
+
+        if d.empty:
+            return px.bar(title="No AI filtered data available")
+
+        agg = (
+            d.groupby("start_hour")
+            .size()
+            .reset_index(name="trip_count")
+        )
+
+        fig = px.bar(
+                agg,
+                x="start_hour",
+                y="trip_count",
+                template="plotly_white",
+                color_discrete_sequence=['#6C5CE7'],
+                hover_data={
+                    "trip_count": True,
+                    "start_hour": True
+                }
+        )u
+
+        fig.update_layout(
+            title="AI Selected Trips by Start Hour",
+            xaxis_title="Start Hour",
+            yaxis_title="Trip Count",
+            hovermode="x unified"
+        )
+
+        return fig
+    
+    @render_plotly
+    def ai_usertype_plot():
+
+        d = ai_df()
+
+        if len(d) > 20000: #to prevent rendering lag
+            d = d.sample(20000)
+
+        if d.empty:
+            return px.bar(title="No AI filtered data available")
+
+        agg = (
+            d.groupby("usertype")
+            .size()
+            .reset_index(name="trip_count")
+        )
+
+        fig = px.bar(
+            agg,
+            x="usertype",
+            y="trip_count",
+            template="plotly_white",
+            color="usertype",
+            hover_data={
+                "usertype": True,
+                "trip_count": True
+            }
+        )
+
+        fig.update_layout(
+            title="AI Selected User Types",
+            xaxis_title="User Type",
+            yaxis_title="Trip Count",
+            hovermode="x unified"
+        )
+
         return fig
     
     
