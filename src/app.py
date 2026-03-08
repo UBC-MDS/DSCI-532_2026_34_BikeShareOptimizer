@@ -161,7 +161,19 @@ def server(input, output, session):
 
     @reactive.calc
     def ai_df():
-        return qc_vals.df()
+        try:
+            d = qc_vals.df()
+
+            if d is None:
+                return pd.DataFrame()
+
+            if not isinstance(d, pd.DataFrame):
+                return pd.DataFrame()
+
+            return d
+
+        except Exception:
+            return pd.DataFrame()
 
     @render.data_frame
     def ai_data_table():
