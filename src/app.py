@@ -421,5 +421,38 @@ def server(input, output, session):
 
         return fig
     
+    @render_plotly
+    def ai_usertype_plot():
+
+        d = ai_df()
+
+        if d.empty:
+            return px.bar(title="No AI filtered data available")
+
+        agg = (
+            d.groupby("usertype")
+            .size()
+            .reset_index(name="trip_count")
+        )
+
+        fig = px.bar(
+            agg,
+            x="usertype",
+            y="trip_count",
+            template="plotly_white",
+            color="usertype",
+            hover_data={"trip_count": True}
+        )
+
+        fig.update_layout(
+            title="AI Selected User Types",
+            xaxis_title="User Type",
+            yaxis_title="Trip Count",
+            hovermode="x unified"
+        )
+
+        return fig
+    
+    
 # Create app
 app = App(app_ui, server)
