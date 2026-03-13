@@ -385,23 +385,35 @@ def server(input, output, session):
             longitude=("start station longitude", "first"),
             trip_count=("start station name", "size")
         ).reset_index()
-        
+
         fig = px.scatter_mapbox(
-            station_agg, 
+            station_agg,
+            lat="latitude",
+            lon="longitude",
+            color_discrete_sequence=['#1e1e1e'],
+            zoom=10,
+        )
+
+        fig.update_traces(marker=dict(size=8), hoverinfo='skip', hovertemplate=None)
+
+        fig2 = px.scatter_mapbox(
+            station_agg,
             lat="latitude",
             lon="longitude",
             color="trip_count",
-            color_continuous_scale='Purples',
+            color_continuous_scale='plasma',
             hover_name="start station name",
             hover_data=['latitude', 'longitude', "trip_count"],
-            labels={"latitude": "Latitude", "longitude": "Longitude", "trip_count": "Trip Count"},
-            zoom=10
+            labels={"latitude": "Latitude", "longitude": "Longitude", "trip_count": "Trip Count"}
         )
 
-        fig.update_layout(mapbox_style="open-street-map",
+        fig.add_trace(fig2.data[0])
+
+        fig.update_layout(mapbox_style="carto-positron",
                           margin={"r":0,"t":0,"l":0,"b":0},
                           coloraxis_colorbar=dict(title='Trip Count')
                           )
+
         return fig
     
     @render_plotly
