@@ -260,7 +260,7 @@ def server(input, output, session):
         customers = (d["usertype"] == "Customer").sum()
 
         if customers == 0:
-            return "∞"
+            return "Please select both Subscriber and Customer"
 
         ratio = subscribers / customers
         return f"{ratio:.2f}"
