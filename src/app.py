@@ -96,7 +96,8 @@ app_ui = ui.page_navbar(
                     "0", "1", "2"
                 ],
             ),
-            ui.input_action_button("reset", "Reset filter"),
+            ui.input_action_button('apply', 'Apply Filters', class_='btn-primary'),
+            ui.input_action_button("reset", "Reset Filter"),
             open="desktop",
         ),
         ui.layout_columns(
