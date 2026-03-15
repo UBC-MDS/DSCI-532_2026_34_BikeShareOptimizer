@@ -9,6 +9,7 @@ import os
 from dotenv import load_dotenv
 import querychat
 from chatlas import ChatAnthropic
+from utils import calculate_avg_trip_time
 
 # Read Anthropic API key
 load_dotenv()
@@ -245,7 +246,10 @@ def server(input, output, session):
             return 'Please select a User Type'
         d = filtered_df()
         if d.empty: return "N/A"
-        avg = d['tripduration'].mean() / 60
+        avg = calculate_avg_trip_time(d)
+        if avg is None:
+            return "N/A"
+
         return f"{avg:.1f} mins"
 
     @render.text
