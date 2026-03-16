@@ -9,6 +9,7 @@ import os
 from dotenv import load_dotenv
 import querychat
 from chatlas import ChatAnthropic
+import plotly.graph_objects as go
 
 # Read Anthropic API key
 load_dotenv()
@@ -96,7 +97,8 @@ app_ui = ui.page_navbar(
                     "0", "1", "2"
                 ],
             ),
-            ui.input_action_button("reset", "Reset filter"),
+            ui.input_action_button('apply', 'Apply Filters', class_='btn-primary'),
+            ui.input_action_button("reset", "Reset Filter"),
             open="desktop",
         ),
         ui.layout_columns(
@@ -159,6 +161,8 @@ app_ui = ui.page_navbar(
 def server(input, output, session):
     qc_vals = qc.server()
 
+    selected_stations = reactive.Value([])
+
     @reactive.calc
     def ai_df():
         try:
@@ -199,7 +203,7 @@ def server(input, output, session):
         return str(len(ai_df()))
 
     @reactive.calc
-    def filtered_df():
+    def base_filtered_df():
         # Convert sidebar options to variables
         s_min, s_max = input.start_time_slider()
         genders = [int(g) for g in input.gender_checkbox()]
@@ -229,6 +233,14 @@ def server(input, output, session):
 
         return df[m]
 
+    @reactive.calc
+    def filtered_df():
+        d = base_filtered_df()
+        stations = selected_stations.get()
+        if stations:
+            d = d[d['start station name'].isin(stations)]
+        return d
+
     @reactive.effect
     @reactive.event(input.reset)
     def _():
@@ -238,6 +250,7 @@ def server(input, output, session):
         ui.update_checkbox_group("gender_checkbox", selected=['0', '1', '2'])
         ui.update_selectize("day_of_week_filter", selected=[])
         ui.update_selectize("month_filter", selected=[])
+        selected_stations.set([])
 
     @render.text
     def avg_trip_time():
@@ -260,7 +273,7 @@ def server(input, output, session):
         customers = (d["usertype"] == "Customer").sum()
 
         if customers == 0:
-            return "∞"
+            return "Please select both Subscriber and Customer"
 
         ratio = subscribers / customers
         return f"{ratio:.2f}"
@@ -367,12 +380,12 @@ def server(input, output, session):
         
         return fig
 
-    @render_plotly
+    @render_widget
     def map():
         if not input.usertype_checkbox():
             return px.scatter_mapbox(lat=[0], lon=[0], zoom=0).update_layout(title="Please select a User Type")
 
-        d = filtered_df()
+        d = base_filtered_df()
 
         if d.empty:
             # Provide an empty scatter mapbox safely
@@ -385,24 +398,52 @@ def server(input, output, session):
             longitude=("start station longitude", "first"),
             trip_count=("start station name", "size")
         ).reset_index()
-        
+
         fig = px.scatter_mapbox(
-            station_agg, 
+            station_agg,
+            lat="latitude",
+            lon="longitude",
+            color_discrete_sequence=['#1e1e1e'],
+            zoom=10,
+        )
+
+        fig.update_traces(marker=dict(size=8), hoverinfo='skip', hovertemplate=None)
+
+        fig2 = px.scatter_mapbox(
+            station_agg,
             lat="latitude",
             lon="longitude",
             color="trip_count",
-            color_continuous_scale='Purples',
+            color_continuous_scale='plasma',
             hover_name="start station name",
             hover_data=['latitude', 'longitude', "trip_count"],
-            labels={"latitude": "Latitude", "longitude": "Longitude", "trip_count": "Trip Count"},
-            zoom=10
+            labels={"latitude": "Latitude", "longitude": "Longitude", "trip_count": "Trip Count"}
         )
 
-        fig.update_layout(mapbox_style="open-street-map",
+        fig.add_trace(fig2.data[0])
+
+        fig.update_layout(mapbox_style="carto-positron",
                           margin={"r":0,"t":0,"l":0,"b":0},
-                          coloraxis_colorbar=dict(title='Trip Count')
+                          coloraxis_colorbar=dict(title='Trip Count'),
+                          clickmode='event+select'
                           )
-        return fig
+        fw = go.FigureWidget(fig)
+
+        def handle_selection(trace, points, state):
+            if points.point_inds:
+                stations = station_agg.iloc[points.point_inds]["start station name"].tolist()
+                selected_stations.set(stations)
+            else:
+                selected_stations.set([])
+
+        def handle_deselect(*args, **kwargs):
+            selected_stations.set([])
+
+        fw.data[1].on_selection(handle_selection)
+        fw.data[1].on_click(handle_selection)
+        fw.data[1].on_deselect(handle_deselect)
+
+        return fw
     
     @render_plotly
     def ai_start_hour_plot():
