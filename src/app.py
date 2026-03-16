@@ -9,7 +9,6 @@ import os
 from dotenv import load_dotenv
 import querychat
 from chatlas import ChatAnthropic
-import utils
 from utils import calculate_avg_trip_time
 import plotly.graph_objects as go
 from pathlib import Path
@@ -190,7 +189,6 @@ def server(input, output, session):
     @reactive.calc
     def ai_df():
         try:
-            #d = qc_vals.df()
             d = qc_vals.df().execute()
 
             if d is None:
