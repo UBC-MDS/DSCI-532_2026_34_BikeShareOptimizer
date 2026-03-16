@@ -43,6 +43,52 @@ pip install -r requirements.txt
 ```
 shiny run src/app.py
 ```
+
+## 🧪 Running Tests
+
+This project includes automated tests to ensure dashboard functionality and prevent regressions.
+
+We use:
+- **Playwright** for end-to-end behavioral testing of the dashboard UI
+- **Pytest** for unit testing core logic functions
+
+### Install testing dependencies
+
+```bash
+pip install pytest playwright pytest-playwright
+playwright install
+```
+### Start the dashboard locally
+
+```bash
+shiny run src/app.py
+```
+
+The dashboard will run at:
+
+```
+http://localhost:8000
+```
+
+### Run the tests
+
+```bash
+pytest tests/
+```
+
+### Included Tests
+
+#### Behavioral Tests (Playwright)
+
+- Verify that changing a sidebar filter updates KPI value boxes  
+- Verify that the **AI Insights** tab renders the data table  
+- Verify that the **Reset filter** button clears all active filters  
+
+#### Unit Tests (Pytest)
+
+- Tests the `calculate_avg_trip_time()` function in `src/utils.py`  
+- Ensures the function returns correct values and handles empty data
+
 ## 🏗 Project Structure
 
 The project is organized to separate application logic, data assets, and technical documentation:
