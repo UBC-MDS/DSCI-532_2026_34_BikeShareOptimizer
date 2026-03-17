@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2026-03-17 (Milestone 4)
+
+### Added
+* **Data ETL Pipeline**: Added `src/prep_data.py` to filter and convert raw CSV data into a highly compressed Parquet format.
+* **Automated Testing**: Integrated `pytest` for unit testing helper functions and `playwright` for end-to-end behavioral testing of the UI.
+* **Modular Architecture**: Added `src/utils.py` to decouple business logic (like trip time calculations) from the main `app.py` server logic.
+
+### Changed
+* **Database Backend**: Migrated from in-memory Pandas dataframes to a DuckDB + Ibis backend to drastically improve filtering performance and reduce server memory load.
+* **UI Defaults**: Adjusted the `Birth Year` slider to default to 1950 (instead of 1899) to prevent historical outliers from visually skewing the initial histogram load.
+* **Contextual Framing**: Updated the main dashboard title to `Citi Bike NYC System Optimizer` to clarify the geographic scope for end-users.
+
+### Deprecated
+* **None**
+
+### Removed
+* **Redundant UI Elements**: Removed Plotly-generated chart titles that duplicated the Shiny `ui.card_header` text to clean up the visual layout.
+
+### Fixed
+* **AI Memory Crashes**: Fixed the "Error code 5" infinite spinning bug by sampling the dataframe before passing it to `QueryChat` and correctly handling the Ibis-to-Pandas `.execute()` conversion.
+* **Division by Zero Error**: Fixed the "Subscriber to Customer Ratio" displaying `Infinity` when no customers are selected; it now cleanly displays `N/A (No Customers)`.
+* **Military Time Formatting**: Converted the "Most Popular Start Hour" KPI from a raw 24-hour integer (e.g., `18`) into a user-friendly 12-hour AM/PM format (e.g., `6:00 PM`).
+* **Blank Plot Confusion**: Added an explicit `Data unavailable (Subscribers only)` placeholder to the Birth Year histogram when the Subscriber checkbox is unselected.
+* **Deployment Import Paths**: Fixed the `No module named 'utils'` crash on Posit Connect Cloud by updating absolute import paths (`from src.utils import...`).
+
+### Security
+* **API Key Protection**: Enforced `.env` variable loading for the Anthropic API key to ensure credentials are never hardcoded into the repository or exposed in client-side code.
+
+### Reflection
+* **Milestone 4 Takeaway**: Transitioning to a DuckDB backend and modularizing our code was a steep learning curve, but it fundamentally transformed our app from a prototype into a production-ready dashboard. Writing tests for `utils.py` and implementing GitHub collaboration norms kept our team aligned and prevented the last-minute merge conflicts we experienced in M3.
+
+---
+
 ## [0.3.0] - 2026-03-07 (Milestone 3)
 
 ### Added
