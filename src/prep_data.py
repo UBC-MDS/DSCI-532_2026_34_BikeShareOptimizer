@@ -23,7 +23,7 @@ print("Converting to Parquet (this takes a minute — runs only once) ...")
 
 # read_csv_auto infers headers and column types automatically
 duckdb.execute(f"""
-    COPY (SELECT * FROM read_csv_auto('{CSV_URL}'))
+    COPY (SELECT * FROM read_csv_auto('{CSV_URL}') LIMIT 100000)
     TO '{OUT}' (FORMAT PARQUET)
 """)
 
