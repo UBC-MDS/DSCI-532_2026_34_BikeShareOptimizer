@@ -9,7 +9,7 @@ import os
 from dotenv import load_dotenv
 import querychat
 from chatlas import ChatAnthropic
-from utils import calculate_avg_trip_time
+from src.utils import calculate_avg_trip_time
 import plotly.graph_objects as go
 from pathlib import Path
 import ibis
