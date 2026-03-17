@@ -11,22 +11,44 @@ import querychat
 from chatlas import ChatAnthropic
 from utils import calculate_avg_trip_time
 import plotly.graph_objects as go
+from pathlib import Path
+import ibis
+from ibis import _
 
 # Read Anthropic API key
 load_dotenv()
 API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 
-# Read Data
-df = pd.read_csv("data/raw/201306-citibike-tripdata.csv", parse_dates=['starttime', 'stoptime'])
-df['start_hour'] = df['starttime'].dt.hour
-df['end_hour'] = df['stoptime'].dt.hour
-df['birth year'] = df['birth year'].astype('Int64')
-df['day_of_week'] = df['starttime'].dt.day_name()
-df['month'] = df['starttime'].dt.month_name()
+# -- Data setup (runs once at startup) ----------------------------------------
+
+PARQUET = Path(__file__).parent / ".." / "data" / "processed" / "201306-citibike-tripdata.parquet"
+if not PARQUET.exists():
+    raise FileNotFoundError(
+        "Missing parquet file. Run `python src/prep_data.py` first."
+    )
+
+con = ibis.duckdb.connect()
+df = con.read_parquet(str(PARQUET))  # table reference — no data loaded yet
+
+df = df.mutate(
+    starttime = df.starttime.cast("timestamp"),
+    stoptime = df.stoptime.cast("timestamp")
+)
+df = df.mutate(start_hour = df['starttime'].hour())
+df = df.mutate(end_hour = df['stoptime'].hour())
+
+df = df.mutate(day_of_week = df['starttime'].day_of_week.full_name())
+df = df.mutate(month = df['starttime'].strftime('%B'))
+
+df = df.mutate(
+    birth_year = df["birth year"].nullif('NULL').cast('int64')
+)
+
+df = df.drop("birth year").rename({"birth year": "birth_year"})
 
 # Initialize QueryChat
 qc = querychat.QueryChat(
-    df.copy(),
+    df, 
     "BikeShareOptimizer",
     greeting="👋 Hi! I'm your BikeShare assistant. Ask me about trends in Citi Bike data!",
     data_description="""
@@ -34,7 +56,7 @@ qc = querychat.QueryChat(
     Columns:
     - starttime, stoptime: Datetimes
     - start_hour, end_hour: Integer (0-23)
-    - birth year: Integer
+    - birth year: Integer(nullable)
     - usertype: 'Subscriber' or 'Customer'
     - gender: 0 (Unknown), 1 (Male), 2 (Female)
     - start station name: String
@@ -60,9 +82,9 @@ app_ui = ui.page_navbar(
                 ui.input_slider(
                     id="birth_year_slider",
                     label="User Birth Year (Subscribers Only)",
-                    min=int(df['birth year'].min()),
-                    max=int(df['birth year'].max()),
-                    value=[int(df['birth year'].min()), int(df['birth year'].max())],
+                    min=1899, 
+                    max=1997, 
+                    value=[1899, 1997],
                     sep=''
                 )
             ),
@@ -167,7 +189,7 @@ def server(input, output, session):
     @reactive.calc
     def ai_df():
         try:
-            d = qc_vals.df()
+            d = qc_vals.df().execute()
 
             if d is None:
                 return pd.DataFrame()
@@ -232,11 +254,11 @@ def server(input, output, session):
             m_birth = df['birth year'].between(b_min, b_max)
             m = m & m_birth
 
-        return df[m]
+        return df.filter(m)
 
     @reactive.calc
     def filtered_df():
-        d = base_filtered_df()
+        d = base_filtered_df().execute()
         stations = selected_stations.get()
         if stations:
             d = d[d['start station name'].isin(stations)]
@@ -389,7 +411,7 @@ def server(input, output, session):
         if not input.usertype_checkbox():
             return px.scatter_mapbox(lat=[0], lon=[0], zoom=0).update_layout(title="Please select a User Type")
 
-        d = base_filtered_df()
+        d = base_filtered_df().execute()
 
         if d.empty:
             # Provide an empty scatter mapbox safely
